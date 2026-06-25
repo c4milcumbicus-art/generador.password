@@ -1,44 +1,129 @@
 import random
 import string
 
-print("--- Generador de contraseña ---")
+# Lista para guardar historial
+historial = []
 
-# --- Validación de la longitud ingresada por el usuario ---
-longitud = 0
-while longitud < 8:
-    entrada = input("ingrese la longitud de la contraseña (mínimo 8): ")
-    if entrada.isdigit():
-        longitud = int(entrada)
-        if longitud < 8:
-            print("La contraseña debe tener al menos 8 caracteres.\n")
-    else:
-        print("Debe ingresar un número.\n")
+# Tupla con longitudes recomendadas
+longitudes_recomendadas = (8, 12, 16, 20)
 
-# --- Conjuntos de caracteres disponibles ---
-mayusculas = string.ascii_uppercase
-minusculas = string.ascii_lowercase
-numeros = string.digits
-simbolos = "!@#$%&*?"
+# Diccionario con grupos de caracteres
+caracteres = {
+    "mayusculas": string.ascii_uppercase,
+    "minusculas": string.ascii_lowercase,
+    "numeros": string.digits,
+    "simbolos": "!@#$%&*?"
+}
 
-todos = mayusculas + minusculas + numeros + simbolos
 
-# --- Garantizamos al menos un caracter de cada tipo ---
-# (así la contraseña siempre es variada, no solo letras o solo números)
-contrasena = ""
-contrasena += random.choice(mayusculas)
-contrasena += random.choice(minusculas)
-contrasena += random.choice(numeros)
-contrasena += random.choice(simbolos)
+def generar_password(longitud, mayusculas, numeros, simbolos):
 
-# --- Completamos el resto de la longitud con caracteres aleatorios ---
-for i in range(longitud - 4):
-    caracter = random.choice(todos)
-    contrasena += caracter
+    password = []
 
-# --- Mezclamos el orden para que los 4 obligatorios no queden siempre al inicio ---
-lista_contrasena = list(contrasena)
-random.shuffle(lista_contrasena)
-contrasena = "".join(lista_contrasena)
+    # Siempre incluir minúsculas
+    conjunto = caracteres["minusculas"]
 
-print("\n¡Contraseña creada con éxito!")
-print("Su contraseña es:", contrasena)
+    if mayusculas:
+        conjunto += caracteres["mayusculas"]
+        password.append(random.choice(caracteres["mayusculas"]))
+
+    if numeros:
+        conjunto += caracteres["numeros"]
+        password.append(random.choice(caracteres["numeros"]))
+
+    if simbolos:
+        conjunto += caracteres["simbolos"]
+        password.append(random.choice(caracteres["simbolos"]))
+
+    # Asegurar al menos una minúscula
+    password.append(random.choice(caracteres["minusculas"]))
+
+    # Completar el resto de caracteres
+    while len(password) < longitud:
+        password.append(random.choice(conjunto))
+
+    # Mezclar para que no siga un patrón
+    random.shuffle(password)
+
+    return "".join(password)
+
+
+def mostrar_historial():
+
+    if len(historial) == 0:
+        print("\nNo hay contraseñas generadas.")
+        return
+
+    print("\n===== HISTORIAL =====")
+
+    for i, clave in enumerate(historial, start=1):
+        print(f"{i}. {clave}")
+
+
+def menu():
+
+    while True:
+
+        print("\n==============================")
+        print(" GENERADOR DE CONTRASEÑAS ")
+        print("==============================")
+        print("Longitudes recomendadas:", longitudes_recomendadas)
+        print("1. Generar contraseña")
+        print("2. Ver historial")
+        print("3. Salir")
+
+        opcion = input("\nSeleccione una opción: ")
+
+        if opcion == "1":
+
+            while True:
+
+                try:
+                    longitud = int(
+                        input("Ingrese la longitud (mínimo 8): ")
+                    )
+
+                    if longitud >= 8:
+                        break
+
+                    print("La contraseña debe tener mínimo 8 caracteres.")
+
+                except ValueError:
+                    print("Ingrese un número válido.")
+
+            mayusculas = input(
+                "¿Incluir mayúsculas? (s/n): "
+            ).lower() == "s"
+
+            numeros = input(
+                "¿Incluir números? (s/n): "
+            ).lower() == "s"
+
+            simbolos = input(
+                "¿Incluir símbolos? (s/n): "
+            ).lower() == "s"
+
+            password = generar_password(
+                longitud,
+                mayusculas,
+                numeros,
+                simbolos
+            )
+
+            historial.append(password)
+
+            print("\nContraseña generada:")
+            print(password)
+
+        elif opcion == "2":
+            mostrar_historial()
+
+        elif opcion == "3":
+            print("\nGracias por usar el programa.")
+            break
+
+        else:
+            print("\nOpción no válida.")
+
+
+menu()
